@@ -13,7 +13,8 @@ Plugin to share banlist between clans. How it works ?
 1. Copy Plugin in IW4MAdmin/plugins directory
 2. Contact me on discord `Zwambro#8854` to create an token for your clan (You can't use this plugin without Token).
 3. Create a discord webhook. 
-5. Open plugin and past the token I sent you in `zwambroapi: ""`, and discord webhook url in `webhook: ""`.
+4. Open plugin and past the token I sent you in `zwambroapi: ""`, and discord webhook url in `webhook: ""`.
+5. visit [Zwambro.pw](https://zwambro.pw/) to see all bans.
 
 ### Special thanks and acknowledgements
 - DANGER clan for testing.
