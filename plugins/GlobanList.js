@@ -61,16 +61,20 @@ var plugin = {
                 embed = {
                     "timestamp": new Date(),
                     "color": 0,
+					    "footer": {
+							"text": "Website: www.zwambro.pw"
+						},
                     "author": {
                         "name": this.getGameName(server),
-                        "url": "https://zwambro.pw",
                         "icon_url": this.getGameUrl(server).toString()
                     },
-                    "fields": [{
-                        "name": "\u200b",
-                        "value": "Suspicious player joined **" + server.Hostname.replace(/\^[0-9:;c]/g, "") + "**\n\n**Player Name:**\n==> [`" + gameEvent.Origin.CleanedName + "`](" + this.getBasUrl() + "client/profileasync/" + gameEvent.Origin.ClientId + ")\n\n**Previously Banned on:**\n==>" + getServer + "\n\n**Reason of Ban:**\n==>" + getReason,
-                        "inline": false
-                    }]
+                    "fields": [
+                        {
+                            "name": "\u200b",
+                            "value": "**================GLOBANLIST=================**\n\n**Suspicious player joined:**\n=> " + server.Hostname.replace(/\^[0-9:;c]/g, "") + "\n\n**Player Name:**\n=> [`" + gameEvent.Origin.CleanedName + "`](" + this.getBasUrl() + "client/profileasync/" + gameEvent.Origin.ClientId + ")\n\n**Previously Banned on:**\n=> " + getServer + "\n\n**Reason of Ban:**\n=> " + getReason,
+                            "inline": false
+                        }
+                    ]
                 }
                 this.sendWebHook(embed);
             }
