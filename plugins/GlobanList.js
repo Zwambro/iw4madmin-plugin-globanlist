@@ -1,17 +1,9 @@
 var plugin = {
     author: 'Zwambro',
-    version: 1.0,
-    name: 'Share ban list between clans',
+    version: 1.1,
+    name: 'Globanlist',
 
-    // Contact me on discord Zwambro#8854 to create a token for you
-    zwambroapi: "",
-
-    // Past you discord webhook here
-    webhook: "",
-
-    // Enable or disable the plugin
-    enabled: true,
-
+    configHandler: null,
     manager: null,
     logger: null,
 
@@ -19,7 +11,7 @@ var plugin = {
         var onBanOutput = false;
         try {
             var client = new System.Net.Http.HttpClient();
-            client.DefaultRequestHeaders.add("Authorization", "Token " + this.zwambroapi);
+            client.DefaultRequestHeaders.add("Authorization", "Token " + this.getZwambroApiConf());
             var result = client.PostAsync("https://zwambro.pw/globanlist/addban", new System.Net.Http.StringContent(JSON.stringify(data), System.Text.Encoding.UTF8, "application/json")).Result;
             var resCl = result.Content;
             var parsedJSON = JSON.parse(resCl.ReadAsStringAsync().Result);
@@ -41,7 +33,7 @@ var plugin = {
         var getReason = "";
         try {
             var client1 = new System.Net.Http.HttpClient();
-            client1.DefaultRequestHeaders.add("Authorization", "Token " + this.zwambroapi);
+            client1.DefaultRequestHeaders.add("Authorization", "Token " + this.getZwambroApiConf());
             var result1 = client1.GetAsync("https://zwambro.pw/globanlist/checktheban?guid=" + gameEvent.Origin.NetworkId.toString() + "&ip=" + gameEvent.Origin.IPAddressString.toString()).Result;
             var resCl1 = result1.Content;
             var toJson1 = JSON.parse(resCl1.ReadAsStringAsync().Result);
@@ -61,19 +53,42 @@ var plugin = {
                 embed = {
                     "timestamp": new Date(),
                     "color": 0,
-					    "footer": {
-							"text": "Website: www.zwambro.pw"
-						},
+                    //"description": "Suspicious player joined " + server.Hostname.replace(/\^[0-9:;c]/g, ""),
                     "author": {
-                        "name": this.getGameName(server),
-                        "icon_url": this.getGameUrl(server).toString()
+                        "name": "Globanlist",
+                        "url": "https://zwambro.pw"
                     },
                     "fields": [
                         {
-                            "name": "\u200b",
-                            "value": "**================GLOBANLIST=================**\n\n**Suspicious player joined:**\n=> " + server.Hostname.replace(/\^[0-9:;c]/g, "") + "\n\n**Player Name:**\n=> [`" + gameEvent.Origin.CleanedName + "`](" + this.getBasUrl() + "client/profileasync/" + gameEvent.Origin.ClientId + ")\n\n**Previously Banned on:**\n=> " + getServer + "\n\n**Reason of Ban:**\n=> " + getReason,
+                            "name": "A suspicious player has joined:",
+                            "value": server.Hostname.replace(/\^[0-9:;c]/g, ""),
                             "inline": false
-                        }
+                        },
+                        {
+                            "name": "Playername:",
+                            "value": "[`" + gameEvent.Origin.CleanedName + "`](" + this.getBasUrl() + "client/profileasync/" + gameEvent.Origin.ClientId + ")",
+                            "inline": true
+                        },
+                        {
+                            "name": "PlayerID",
+                            "value": "@" + gameEvent.Origin.ClientId,
+                            "inline": true
+                        },
+                        {
+                            "name": "Recently Banned on:",
+                            "value": getServer,
+                            "inline": false
+                        },
+                        {
+                            "name": "Game where it was banned:",
+                            "value": this.getGameName(server),
+                            "inline": false
+                        },
+                        {
+                            "name": "Reason of Ban:",
+                            "value": getReason,
+                            "inline": false
+                        },
                     ]
                 }
                 this.sendWebHook(embed);
@@ -86,7 +101,7 @@ var plugin = {
         var unbanJsonOutput = false
         try {
             var client2 = new System.Net.Http.HttpClient();
-            client2.DefaultRequestHeaders.add("Authorization", "Token " + this.zwambroapi);
+            client2.DefaultRequestHeaders.add("Authorization", "Token " + this.getZwambroApiConf());
             var result2 = client2.PostAsync("https://zwambro.pw/globanlist/unban", new System.Net.Http.StringContent(JSON.stringify(data1), System.Text.Encoding.UTF8, "application/json")).Result;
             var resCl2 = result2.Content;
             var toJson2 = JSON.parse(resCl2.ReadAsStringAsync().Result);
@@ -107,7 +122,7 @@ var plugin = {
                 "embeds": [embed]
             }
             var client1 = new System.Net.Http.HttpClient();
-            var result1 = client1.PostAsync(this.webhook, new System.Net.Http.StringContent(JSON.stringify(params), System.Text.Encoding.UTF8, "application/json")).Result;
+            var result1 = client1.PostAsync(this.getDiscordWebhookConf(), new System.Net.Http.StringContent(JSON.stringify(params), System.Text.Encoding.UTF8, "application/json")).Result;
             var resCl1 = result1.Content;
             resCl1.Dispose();
             result1.Dispose();
@@ -149,37 +164,23 @@ var plugin = {
         }
         return game;
     },
-
-    getGameUrl: function (server) {
-        var iconUrl = "";
-        if (server.eventParser.Name === "CoD4x Parser") {
-            iconUrl = "http://orig05.deviantart.net/8749/f/2008/055/0/c/call_of_duty_4__dock_icon_by_watts240.png";
-        } else if (server.eventParser.Name === "IW4x Parser") {
-            iconUrl = "https://i.gyazo.com/758b6933287392106bfdddc24b09d502.png";
-        } else if (server.eventParser.Name === "Tekno MW3 Parser") {
-            iconUrl = "https://orig00.deviantart.net/9af1/f/2011/310/2/1/modern_warfare_3_logo_by_wifsimster-d4f9ozd.png";
-        } else if (server.eventParser.Name === "Plutonium IW5 Parser") {
-            iconUrl = "https://orig00.deviantart.net/9af1/f/2011/310/2/1/modern_warfare_3_logo_by_wifsimster-d4f9ozd.png";
-        } else if (server.eventParser.Name === "IW6x Parser") {
-            iconUrl = "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/26fef988-18ad-48d8-a2a7-863b56ff376f/d7ccksp-ef2e9553-f841-4d0b-b84a-d32acfec22d3.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzI2ZmVmOTg4LTE4YWQtNDhkOC1hMmE3LTg2M2I1NmZmMzc2ZlwvZDdjY2tzcC1lZjJlOTU1My1mODQxLTRkMGItYjg0YS1kMzJhY2ZlYzIyZDMucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.RH0ORneDCfkwCQZlCxEfywboloy4j_8b7ABfA_3l5nQ";
-        } else if (server.eventParser.Name === "Plutonium T4 Parser") {
-            iconUrl = "https://aux3.iconspalace.com/uploads/673716477224553414.png";
-        } else if (server.eventParser.Name === "RektT5m Parser") {
-            iconUrl = "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/8678cecb-9a26-4eba-91ba-a768c9e7ebf0/d9gfn65-39ecb111-e20e-4d48-8b00-825d40f19698.png";
-        } else if (server.eventParser.Name === "Plutonium T6 Parser") {
-            iconUrl = "https://i.pinimg.com/originals/5a/44/5c/5a445c5c733c698b32732550ec797e91.jpg";
-        } else if (server.eventParser.Name === "Black Ops 3 Parser") {
-            iconUrl = "https://cdn.imgbin.com/8/11/19/imgbin-call-of-duty-advanced-warfare-call-of-duty-united-offensive-call-of-duty-black-ops-call-of-duty-modern-warfare-2-call-of-duty-modern-warfare-3-others-SvSR3WX8D3DjpHw2Pv7uwZ8e1.jpg";
-        } else if (server.eventParser.Name === "S1x Parser") {
-            iconUrl = "https://img.utdstc.com/icon/245/d52/245d52392811b3ed9f0a0dadb463a94cb5069811867551476e94d3efeec08f4b:200";
+    getZwambroApiConf: function () {
+        var zwambroApiValue = this.configHandler.GetValue("ZwambroAPI");
+        if (!zwambroApiValue) {
+            this.configHandler.SetValue("ZwambroAPI", "PASTZWAMBROAPIHERE");
         }
-        return iconUrl;
+        return zwambroApiValue;
     },
+    getDiscordWebhookConf: function () {
+        var discordWebhookValue = this.configHandler.GetValue("DiscordWebhook");
+        if (!discordWebhookValue) {
+            this.configHandler.SetValue("DiscordWebhook", "PASTDISCORDWEBHOOKHERE");
+        }
+        return discordWebhookValue;
+    },
+
     onEventAsync: function (gameEvent, server) {
 
-        if (!this.enabled) {
-            return;
-        }
         if (gameEvent.Type === 108) {
             var data = {
                 "game": this.getGameName(server),
@@ -210,6 +211,17 @@ var plugin = {
     onLoadAsync: function (manager) {
         this.manager = manager;
         this.logger = manager.GetLogger(0);
+        this.configHandler = _configHandler;
+        this.configHandler.SetValue("Author", this.author);
+        this.configHandler.SetValue("Version", this.version);
+        var webHook = this.configHandler.GetValue("DiscordWebhook");
+        var zwambroApi = this.configHandler.GetValue("ZwambroAPI");
+        if (!webHook) {
+            this.configHandler.SetValue("DiscordWebhook", "PASTDISCORDWEBHOOKHERE");
+        }
+        if (!zwambroApi) {
+            this.configHandler.SetValue("ZwambroAPI", "PASTZWAMBROAPIHERE");
+        }
     },
 
     onUnloadAsync: function () {},
