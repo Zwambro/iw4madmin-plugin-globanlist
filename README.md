@@ -1,4 +1,4 @@
-# IW4MAdmin [![GitHub license](https://img.shields.io/github/license/RaidMax/IW4M-Admin)](https://github.com/Zwambro/iw4madmin-plugin-iw4todiscord/blob/master/LICENSE) [![GitHub stars](https://img.shields.io/github/stars/RaidMax/IW4M-Admin)](https://github.com/RaidMax/IW4M-Admin/stargazers)  
+# IW4MAdmin [![GitHub license](https://img.shields.io/github/license/RaidMax/IW4M-Admin)](https://github.com/RaidMax/IW4M-Admin/blob/2.4-pr/LICENSE) [![GitHub stars](https://img.shields.io/github/stars/RaidMax/IW4M-Admin)](https://github.com/RaidMax/IW4M-Admin/stargazers)
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/J3J821KUJ)
 
 
@@ -9,14 +9,13 @@
 ## Introduction
 Plugin to share banlist between clans. How it works ?
 - When you ban a client, the ban will added to globanlist Database.
-- When you unban a client, if client in globanlist, his bane will be deleted from globanlist Database.
 - When a Banned client on globanlist Database joins your servers you will receive a notifications on discord.
 
 ## Installation
 1. Copy Plugin in IW4MAdmin/plugins directory
-2. Restart IW4MAdmin. 
+2. Restart IW4MAdmin.
 3. Contact me on discord `Zwambro#8854` to create an token for your clan (You can't use this plugin without authentication token).
-4. Create a discord webhook to receive informations about globanlisted players on your servers. 
+4. Create a discord webhook to receive informations about globanlisted players on your servers.
 5. Open `IW4MAdmin/Configuration/ScriptPluginSettings.json`, you'll see something like:
   ```
   "Globanlist": {

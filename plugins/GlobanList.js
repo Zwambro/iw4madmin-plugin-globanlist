@@ -7,8 +7,10 @@ in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
+
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -18,9 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+
 var plugin = {
     author: 'Zwambro',
-    version: 1.1,
+    version: 1.2,
     name: 'Globanlist',
 
     configHandler: null,
@@ -51,6 +54,7 @@ var plugin = {
         var getGame = "";
         var getServer = "";
         var getReason = "";
+        var getBanCredibility = "";
         try {
             var client1 = new System.Net.Http.HttpClient();
             client1.DefaultRequestHeaders.add("Authorization", "Token " + this.getZwambroApiConf());
@@ -66,21 +70,20 @@ var plugin = {
                 getGame = toJson1.gamename;
                 getServer = toJson1.hostname;
                 getReason = toJson1.reason;
-
+                getBanCredibility = toJson1.banCredibility
                 if (!getGame === this.getGameName(server)) {
                     return;
                 }
                 embed = {
                     "timestamp": new Date(),
-                    "color": 0,
-                    //"description": "Suspicious player joined " + server.Hostname.replace(/\^[0-9:;c]/g, ""),
+                    "color": 16312092,
                     "author": {
                         "name": "Globanlist",
                         "url": "https://zwambro.pw"
                     },
                     "fields": [
                         {
-                            "name": "A suspicious player has joined:",
+                            "name": "Suspicious player has joined:",
                             "value": server.Hostname.replace(/\^[0-9:;c]/g, ""),
                             "inline": false
                         },
@@ -89,27 +92,28 @@ var plugin = {
                             "value": "[`" + gameEvent.Origin.CleanedName + "`](" + this.getBasUrl() + "client/profileasync/" + gameEvent.Origin.ClientId + ")",
                             "inline": true
                         },
+
                         {
-                            "name": "PlayerID",
-                            "value": "@" + gameEvent.Origin.ClientId,
+                            "name": "The server that was banned from:",
+                            "value": getServer,
                             "inline": true
                         },
                         {
-                            "name": "Recently Banned on:",
-                            "value": getServer,
-                            "inline": false
+                            "name": "The game in which was banned:",
+                            "value": getGame,
+                            "inline": true
                         },
                         {
-                            "name": "Game where it was banned:",
-                            "value": this.getGameName(server),
-                            "inline": false
-                        },
-                        {
-                            "name": "Reason of Ban:",
+                            "name": "Recently Banned For:",
                             "value": getReason,
                             "inline": false
                         },
-                    ]
+                        {
+                            "name": "Ban Credibility:",
+                            "value": '`' + getBanCredibility + '`',
+                            "inline": false
+                        },
+                    ],
                 }
                 this.sendWebHook(embed);
             }
@@ -171,8 +175,10 @@ var plugin = {
             game = "PlutoIW5";
         } else if (server.eventParser.Name === "IW6x Parser") {
             game = "IW6x";
-        } else if (server.eventParser.Name === "Plutonium T4 Parser") {
+        } else if (server.eventParser.Name === "Plutonium T4 MP Parser") {
             game = "PlutoT4";
+        } else if (server.eventParser.Name === "Plutonium T4 CO-OP/Zombies Parser") {
+            game = "PlutoT4 Zombies";
         } else if (server.eventParser.Name === "RektT5m Parser") {
             game = "RektT5M";
         } else if (server.eventParser.Name === "Plutonium T6 Parser") {
@@ -181,6 +187,10 @@ var plugin = {
             game = "Call of Duty: Black Ops III";
         } else if (server.eventParser.Name === "S1x Parser") {
             game = "SHG1";
+        } else if (server.eventParser.Name === "CS:GO Parser") {
+            game = "CSGO";
+        } else if (server.eventParser.Name === "CS:GO (SourceMod) Parser") {
+            game = "CSGO (SourceMod)";
         }
         return game;
     },
