@@ -90,7 +90,7 @@ var plugin = {
                         {
                             "name": "Playername:",
                             "value": "[`" + gameEvent.Origin.CleanedName + "`](" + this.getBasUrl() + "client/profileasync/" + gameEvent.Origin.ClientId + ")",
-                            "inline": true
+                            "inline": false
                         },
 
                         {
