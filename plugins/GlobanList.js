@@ -23,7 +23,7 @@ SOFTWARE.
 
 var plugin = {
     author: 'Zwambro',
-    version: 1.2,
+    version: 1.21,
     name: 'Globanlist',
 
     configHandler: null,
@@ -34,7 +34,7 @@ var plugin = {
         var onBanOutput = false;
         try {
             var client = new System.Net.Http.HttpClient();
-            client.DefaultRequestHeaders.add("Authorization", "Token " + this.getZwambroApiConf());
+            client.DefaultRequestHeaders.add("Authorization", "Token " + this.configHandler.GetValue("ZwambroAPI"));
             var result = client.PostAsync("https://zwambro.pw/globanlist/addban", new System.Net.Http.StringContent(JSON.stringify(data), System.Text.Encoding.UTF8, "application/json")).Result;
             var resCl = result.Content;
             var parsedJSON = JSON.parse(resCl.ReadAsStringAsync().Result);
@@ -57,7 +57,7 @@ var plugin = {
         var getBanCredibility = "";
         try {
             var client1 = new System.Net.Http.HttpClient();
-            client1.DefaultRequestHeaders.add("Authorization", "Token " + this.getZwambroApiConf());
+            client1.DefaultRequestHeaders.add("Authorization", "Token " + this.configHandler.GetValue("ZwambroAPI"));
             var result1 = client1.GetAsync("https://zwambro.pw/globanlist/checktheban?guid=" + gameEvent.Origin.NetworkId.toString() + "&ip=" + gameEvent.Origin.IPAddressString.toString()).Result;
             var resCl1 = result1.Content;
             var toJson1 = JSON.parse(resCl1.ReadAsStringAsync().Result);
@@ -92,19 +92,18 @@ var plugin = {
                             "value": "[`" + gameEvent.Origin.CleanedName + "`](" + this.getBasUrl() + "client/profileasync/" + gameEvent.Origin.ClientId + ")",
                             "inline": false
                         },
-
-                        {
-                            "name": "The server that was banned from:",
-                            "value": getServer,
-                            "inline": true
-                        },
                         {
                             "name": "The game in which was banned:",
                             "value": getGame,
-                            "inline": true
+                            "inline": false
                         },
                         {
-                            "name": "Recently Banned For:",
+                            "name": "The server was banned from:",
+                            "value": getServer,
+                            "inline": false
+                        },
+                        {
+                            "name": "The reason of the ban:",
                             "value": getReason,
                             "inline": false
                         },
@@ -125,7 +124,7 @@ var plugin = {
         var unbanJsonOutput = false
         try {
             var client2 = new System.Net.Http.HttpClient();
-            client2.DefaultRequestHeaders.add("Authorization", "Token " + this.getZwambroApiConf());
+            client2.DefaultRequestHeaders.add("Authorization", "Token " + this.configHandler.GetValue("ZwambroAPI"));
             var result2 = client2.PostAsync("https://zwambro.pw/globanlist/unban", new System.Net.Http.StringContent(JSON.stringify(data1), System.Text.Encoding.UTF8, "application/json")).Result;
             var resCl2 = result2.Content;
             var toJson2 = JSON.parse(resCl2.ReadAsStringAsync().Result);
@@ -146,7 +145,7 @@ var plugin = {
                 "embeds": [embed]
             }
             var client1 = new System.Net.Http.HttpClient();
-            var result1 = client1.PostAsync(this.getDiscordWebhookConf(), new System.Net.Http.StringContent(JSON.stringify(params), System.Text.Encoding.UTF8, "application/json")).Result;
+            var result1 = client1.PostAsync(this.configHandler.GetValue("DiscordWebhook"), new System.Net.Http.StringContent(JSON.stringify(params), System.Text.Encoding.UTF8, "application/json")).Result;
             var resCl1 = result1.Content;
             resCl1.Dispose();
             result1.Dispose();
@@ -184,34 +183,21 @@ var plugin = {
         } else if (server.eventParser.Name === "Plutonium T6 Parser") {
             game = "PlutoT6";
         } else if (server.eventParser.Name === "Black Ops 3 Parser") {
-            game = "Call of Duty: Black Ops III";
+            game = "Call of Duty: Black Ops 3";
         } else if (server.eventParser.Name === "S1x Parser") {
             game = "SHG1";
         } else if (server.eventParser.Name === "CS:GO Parser") {
             game = "CSGO";
         } else if (server.eventParser.Name === "CS:GO (SourceMod) Parser") {
             game = "CSGO (SourceMod)";
+        }else{
+            game = "Not Supported Game";
         }
         return game;
     },
-    getZwambroApiConf: function () {
-        var zwambroApiValue = this.configHandler.GetValue("ZwambroAPI");
-        if (!zwambroApiValue) {
-            this.configHandler.SetValue("ZwambroAPI", "PASTZWAMBROAPIHERE");
-        }
-        return zwambroApiValue;
-    },
-    getDiscordWebhookConf: function () {
-        var discordWebhookValue = this.configHandler.GetValue("DiscordWebhook");
-        if (!discordWebhookValue) {
-            this.configHandler.SetValue("DiscordWebhook", "PASTDISCORDWEBHOOKHERE");
-        }
-        return discordWebhookValue;
-    },
-
     onEventAsync: function (gameEvent, server) {
 
-        if (gameEvent.Type === 108) {
+        if (gameEvent.TypeName === 'Ban') {
             var data = {
                 "game": this.getGameName(server),
                 "server": server.Hostname.replace(/\^[0-9:;c]/g, "").toString(),
@@ -220,16 +206,15 @@ var plugin = {
                 "guid": gameEvent.Target.NetworkId.toString(),
                 "ip": gameEvent.Target.IPAddressString.toString(),
                 "reason": gameEvent.Data.replace(/\^[0-9:;c]/g, "").toString(),
-                "bantype": "Permban",
                 "gameid": '@' + gameEvent.Target.ClientId.toString()
             };
             this.onBan(data);
         }
-        if (gameEvent.Type === 4) {
+        if (gameEvent.TypeName === "Join") {
             this.onConnect(gameEvent, server);
 
         }
-        if (gameEvent.Type === 109) {
+        if (gameEvent.TypeName === "Unban") {
             var data1 = {
                 "guid": gameEvent.Target.NetworkId.toString(),
                 "ip": gameEvent.Target.IPAddressString.toString()
@@ -242,15 +227,18 @@ var plugin = {
         this.manager = manager;
         this.logger = manager.GetLogger(0);
         this.configHandler = _configHandler;
+
         this.configHandler.SetValue("Author", this.author);
         this.configHandler.SetValue("Version", this.version);
+
         var webHook = this.configHandler.GetValue("DiscordWebhook");
         var zwambroApi = this.configHandler.GetValue("ZwambroAPI");
-        if (!webHook) {
-            this.configHandler.SetValue("DiscordWebhook", "PASTDISCORDWEBHOOKHERE");
+
+        if (webHook !== undefined) {
+            this.configHandler.SetValue("DiscordWebhook", "PAST_DISCORD_WEBHOOK_HERE");
         }
-        if (!zwambroApi) {
-            this.configHandler.SetValue("ZwambroAPI", "PASTZWAMBROAPIHERE");
+        if (zwambroApi !== undefined) {
+            this.configHandler.SetValue("ZwambroAPI", "PAST_ZWAMBRO_API_HERE");
         }
     },
 

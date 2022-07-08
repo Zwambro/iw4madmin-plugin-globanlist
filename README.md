@@ -21,11 +21,11 @@ Plugin to share banlist between clans. How it works ?
   "Globanlist": {
     "Author": "Zwambro",
     "Version": 1.1,
-    "DiscordWebhook": "PASTDISCORDWEBHOOKHERE",
-    "ZwambroAPI": "PASTZWAMBROAPIHERE"
+    "DiscordWebhook": "PAST_DISCORD_WEBHOOK_HERE",
+    "ZwambroAPI": "PAST_ZWAMBRO_API_HERE"
   },
   ```
-6. Replace `PASTDISCORDWEBHOOKHERE` with your discord webhook, and replace `PASTZWAMBROAPIHERE` with your Zwambro API token, save the configs.
+6. Replace `PAST_DISCORD_WEBHOOK_HERE` with your discord webhook, and replace `PASTZWAMBROAPIHERE` with your Zwambro API token, save the configs.
 7. visit [Zwambro.pw](https://zwambro.pw/) to see all bans.
 
 ### Special thanks and acknowledgements
