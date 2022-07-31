@@ -21,9 +21,9 @@ SOFTWARE.
 */
 
 
-var plugin = {
+const plugin = {
     author: 'Zwambro',
-    version: 1.21,
+    version: 1.22,
     name: 'Globanlist',
 
     configHandler: null,
